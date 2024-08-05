@@ -14,12 +14,26 @@ exports.isLogged = async (req, res, next) => {
     return next(new AppError('You are not logged in .....', 401));
   }
   const decode = verify(token, process.env.JWT_SECRET);
-  const freshUser = await User.findOne(decode.id);
+  const freshUser = await User.findById(decode.id);
   if (!freshUser) {
     return next(
       new AppError('The user belonging to this token does no longer exits')
     );
   }
-  
+  const isUserChanged = freshUser.isChangedPassword(decode.iat);
+  console.log(isUserChanged);
+  if (isUserChanged) {
+    return next(new AppError('Paaword changed....'));
+  }
+  req.user = freshUser;
   next();
+};
+
+exports.restrictTo = function (...role) {
+  return function (req, res, next) {
+    if (!role.includes(req.user.role)) {
+      return next(new AppError('You dont have permision to delete....', 403));
+    }
+    next();
+  };
 };
