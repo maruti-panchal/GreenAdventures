@@ -21,7 +21,7 @@ exports.isLogged = async (req, res, next) => {
     );
   }
   const isUserChanged = freshUser.isChangedPassword(decode.iat);
-  console.log(isUserChanged);
+
   if (isUserChanged) {
     return next(new AppError('Paaword changed....'));
   }
